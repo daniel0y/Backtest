@@ -1,0 +1,512 @@
+df$t <- df1$t <- as.numeric(df1$Exp - df1$Date) / 360
+#+ fig.width = 15, fig.height = 15, echo = FALSE
+options(digits=4)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+require(xts, quietly = TRUE)
+require(knitr, quietly = TRUE)
+unit <- 100
+path <- "C:/Users/Daniel.yang/Documents/R folder/backtest/OptionIndicator/phase.2/Test/"
+file <- paste0(path, "raw.data.with.vix.csv")
+classes <- c("character", rep("numeric", 4), rep(c("character", rep("numeric", 3)), 8), "numeric")
+df <- read.table(file, header = TRUE, sep = ",", as.is = TRUE, na.strings = c("#N/AN/A", "#VALUE!"),
+colClasses = classes, fill = TRUE)
+df$r <- na.locf(df$r, na.rm = FALSE)
+# verify the 2nd nearest option, using weight average
+df1 <- df[, (1:2)]
+df1$vix <- df$VIX
+df$low.strike <- df1$low.strike <- as.numeric(substr(df$op2.low.p, 18, 21))
+df$high.strike <- df1$high.strike <- as.numeric(substr(df$op2.high.p, 18, 21))
+df1$Date <- as.Date(df1$Date)
+df1$Exp <- as.Date(substr(df$op2.low.p, 8, 15), format="%m/%d/%y")
+df$t <- df1$t <- as.numeric(df1$Exp - df1$Date) / 360
+tmp <- (df$Last.4 - df$Bid.4) * (df$Last.4 - df$Ask.4)
+mid <- (df$Ask.4 + df$Bid.4)/2
+low.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.4, mid), ifelse(tmp>0, mid, df$Last.4))
+tmp <- (df$Last.5 - df$Bid.5) * (df$Last.5 - df$Ask.5)
+mid <- (df$Ask.5 + df$Bid.5)/2
+low.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.5, mid), ifelse(tmp>0, mid, df$Last.5))
+tmp <- (df$Last.6 - df$Bid.6) * (df$Last.6 - df$Ask.6)
+mid <- (df$Ask.6 + df$Bid.6)/2
+high.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.6, mid), ifelse(tmp>0, mid, df$Last.6))
+tmp <- (df$Last.7 - df$Bid.7) * (df$Last.7 - df$Ask.7)
+mid <- (df$Ask.7 + df$Bid.7)/2
+high.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.7, mid), ifelse(tmp>0, mid, df$Last.7))
+df1$low.indi <- df$d - (df$low.strike * df$r * df$t + low.p - low.c) / (df$t * df$Close)
+df1$high.indi <- df$d - (df$high.strike * df$r * df$t + high.p - high.c) / (df$t * df$Close)
+p <- (df1$high.strike - df1$Close) / (df1$high.strike - df1$low.strike)
+df1$indi <- p * df1$low.indi + (1-p) * df1$high.indi
+df1$indi[df1$VIX < 18] <- NA
+df1$ret <- log(df1$Close) - delay(log(df1$Close))
+cum.plot(delay(df1$indi), df1$ret, main="weighted average option indicator vs. 1d return",
+xlab="weighted average option indicator", ylab="1d return")
+View(df1)
+#+ fig.width = 15, fig.height = 15, echo = FALSE
+options(digits=4)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+require(xts, quietly = TRUE)
+require(knitr, quietly = TRUE)
+unit <- 100
+path <- "C:/Users/Daniel.yang/Documents/R folder/backtest/OptionIndicator/phase.2/Test/"
+file <- paste0(path, "raw.data.with.vix.csv")
+classes <- c("character", rep("numeric", 4), rep(c("character", rep("numeric", 3)), 8), "numeric")
+df <- read.table(file, header = TRUE, sep = ",", as.is = TRUE, na.strings = c("#N/AN/A", "#VALUE!"),
+colClasses = classes, fill = TRUE)
+df$r <- na.locf(df$r, na.rm = FALSE)
+# verify the 2nd nearest option, using weight average
+df1 <- df[, (1:2)]
+df1$vix <- df$VIX
+df$low.strike <- df1$low.strike <- as.numeric(substr(df$op2.low.p, 18, 21))
+df$high.strike <- df1$high.strike <- as.numeric(substr(df$op2.high.p, 18, 21))
+df1$Date <- as.Date(df1$Date)
+df1$Exp <- as.Date(substr(df$op2.low.p, 8, 15), format="%m/%d/%y")
+df$t <- df1$t <- as.numeric(df1$Exp - df1$Date) / 360
+tmp <- (df$Last.4 - df$Bid.4) * (df$Last.4 - df$Ask.4)
+mid <- (df$Ask.4 + df$Bid.4)/2
+low.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.4, mid), ifelse(tmp>0, mid, df$Last.4))
+tmp <- (df$Last.5 - df$Bid.5) * (df$Last.5 - df$Ask.5)
+mid <- (df$Ask.5 + df$Bid.5)/2
+low.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.5, mid), ifelse(tmp>0, mid, df$Last.5))
+tmp <- (df$Last.6 - df$Bid.6) * (df$Last.6 - df$Ask.6)
+mid <- (df$Ask.6 + df$Bid.6)/2
+high.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.6, mid), ifelse(tmp>0, mid, df$Last.6))
+tmp <- (df$Last.7 - df$Bid.7) * (df$Last.7 - df$Ask.7)
+mid <- (df$Ask.7 + df$Bid.7)/2
+high.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.7, mid), ifelse(tmp>0, mid, df$Last.7))
+df1$low.indi <- df$d - (df$low.strike * df$r * df$t + low.p - low.c) / (df$t * df$Close)
+df1$high.indi <- df$d - (df$high.strike * df$r * df$t + high.p - high.c) / (df$t * df$Close)
+p <- (df1$high.strike - df1$Close) / (df1$high.strike - df1$low.strike)
+df1$indi <- p * df1$low.indi + (1-p) * df1$high.indi
+df1$indi[df1$vix < 18] <- NA
+df1$ret <- log(df1$Close) - delay(log(df1$Close))
+cum.plot(delay(df1$indi), df1$ret, main="weighted average option indicator vs. 1d return",
+xlab="weighted average option indicator", ylab="1d return")
+portfolio <- matrix(NA, nrow=nrow(df1), ncol=1)
+rownames(portfolio) <- as.character(df1$Date)
+colnames(portfolio) <- "spx"
+ret <- portfolio
+portfolio[df1$indi > 0.01, 1] <- 1
+portfolio[df1$indi < -0.01, 1] <- -1
+ret[, 1] <- df1$ret
+show.pnl.gg(portfolio * 1000, ret, "trade SPX per indicator change", yearly.pnl = TRUE, hit.ratio=TRUE)
+#+ fig.width = 15, fig.height = 15, echo = FALSE
+options(digits=4)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+require(xts, quietly = TRUE)
+require(knitr, quietly = TRUE)
+unit <- 100
+path <- "C:/Users/Daniel.yang/Documents/R folder/backtest/OptionIndicator/phase.2/Test/"
+file <- paste0(path, "raw.data.with.vix.csv")
+classes <- c("character", rep("numeric", 4), rep(c("character", rep("numeric", 3)), 8), "numeric")
+df <- read.table(file, header = TRUE, sep = ",", as.is = TRUE, na.strings = c("#N/AN/A", "#VALUE!"),
+colClasses = classes, fill = TRUE)
+df$r <- na.locf(df$r, na.rm = FALSE)
+# verify the 2nd nearest option, using weight average
+df1 <- df[, (1:2)]
+df1$vix <- df$VIX
+df$low.strike <- df1$low.strike <- as.numeric(substr(df$op2.low.p, 18, 21))
+df$high.strike <- df1$high.strike <- as.numeric(substr(df$op2.high.p, 18, 21))
+df1$Date <- as.Date(df1$Date)
+df1$Exp <- as.Date(substr(df$op2.low.p, 8, 15), format="%m/%d/%y")
+df$t <- df1$t <- as.numeric(df1$Exp - df1$Date) / 360
+tmp <- (df$Last.4 - df$Bid.4) * (df$Last.4 - df$Ask.4)
+mid <- (df$Ask.4 + df$Bid.4)/2
+low.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.4, mid), ifelse(tmp>0, mid, df$Last.4))
+tmp <- (df$Last.5 - df$Bid.5) * (df$Last.5 - df$Ask.5)
+mid <- (df$Ask.5 + df$Bid.5)/2
+low.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.5, mid), ifelse(tmp>0, mid, df$Last.5))
+tmp <- (df$Last.6 - df$Bid.6) * (df$Last.6 - df$Ask.6)
+mid <- (df$Ask.6 + df$Bid.6)/2
+high.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.6, mid), ifelse(tmp>0, mid, df$Last.6))
+tmp <- (df$Last.7 - df$Bid.7) * (df$Last.7 - df$Ask.7)
+mid <- (df$Ask.7 + df$Bid.7)/2
+high.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.7, mid), ifelse(tmp>0, mid, df$Last.7))
+df1$low.indi <- df$d - (df$low.strike * df$r * df$t + low.p - low.c) / (df$t * df$Close)
+df1$high.indi <- df$d - (df$high.strike * df$r * df$t + high.p - high.c) / (df$t * df$Close)
+p <- (df1$high.strike - df1$Close) / (df1$high.strike - df1$low.strike)
+df1$indi <- p * df1$low.indi + (1-p) * df1$high.indi
+df1$indi.chg <- df1$indi - delay(df1$indi)
+df1$indi[df1$vix < 18] <- NA
+df1$indi.chg[df1$vix < 18] <- NA
+df1$ret <- log(df1$Close) - delay(log(df1$Close))
+cum.plot(delay(df1$indi), df1$ret, main="weighted average option indicator vs. 1d return",
+xlab="weighted average option indicator", ylab="1d return")
+cum.plot(delay(df1$indi.chg), df1$ret, main="weighted average option indicator change vs. 1d return",
+xlab="weighted average option indicator change", ylab="1d return")
+portfolio <- matrix(NA, nrow=nrow(df1), ncol=1)
+rownames(portfolio) <- as.character(df1$Date)
+colnames(portfolio) <- "spx"
+ret <- portfolio
+portfolio[df1$indi.chg > 0.01, 1] <- 1
+portfolio[df1$indi.chg < -0.01, 1] <- -1
+ret[, 1] <- df1$ret
+show.pnl.gg(portfolio * 1000, ret, "trade SPX per indicator change", yearly.pnl = TRUE, hit.ratio=TRUE)
+#+ fig.width = 15, fig.height = 15, echo = FALSE
+options(digits=4)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+require(xts, quietly = TRUE)
+require(knitr, quietly = TRUE)
+unit <- 100
+path <- "C:/Users/Daniel.yang/Documents/R folder/backtest/OptionIndicator/phase.2/Test/"
+file <- paste0(path, "raw.data.with.vix.csv")
+classes <- c("character", rep("numeric", 4), rep(c("character", rep("numeric", 3)), 8), "numeric")
+df <- read.table(file, header = TRUE, sep = ",", as.is = TRUE, na.strings = c("#N/AN/A", "#VALUE!"),
+colClasses = classes, fill = TRUE)
+df$r <- na.locf(df$r, na.rm = FALSE)
+# verify the 2nd nearest option, using weight average
+df1 <- df[, (1:2)]
+df1$vix <- df$VIX
+df$low.strike <- df1$low.strike <- as.numeric(substr(df$op2.low.p, 18, 21))
+df$high.strike <- df1$high.strike <- as.numeric(substr(df$op2.high.p, 18, 21))
+df1$Date <- as.Date(df1$Date)
+df1$Exp <- as.Date(substr(df$op2.low.p, 8, 15), format="%m/%d/%y")
+df$t <- df1$t <- as.numeric(df1$Exp - df1$Date) / 360
+tmp <- (df$Last.4 - df$Bid.4) * (df$Last.4 - df$Ask.4)
+mid <- (df$Ask.4 + df$Bid.4)/2
+low.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.4, mid), ifelse(tmp>0, mid, df$Last.4))
+tmp <- (df$Last.5 - df$Bid.5) * (df$Last.5 - df$Ask.5)
+mid <- (df$Ask.5 + df$Bid.5)/2
+low.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.5, mid), ifelse(tmp>0, mid, df$Last.5))
+tmp <- (df$Last.6 - df$Bid.6) * (df$Last.6 - df$Ask.6)
+mid <- (df$Ask.6 + df$Bid.6)/2
+high.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.6, mid), ifelse(tmp>0, mid, df$Last.6))
+tmp <- (df$Last.7 - df$Bid.7) * (df$Last.7 - df$Ask.7)
+mid <- (df$Ask.7 + df$Bid.7)/2
+high.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.7, mid), ifelse(tmp>0, mid, df$Last.7))
+df1$low.indi <- df$d - (df$low.strike * df$r * df$t + low.p - low.c) / (df$t * df$Close)
+df1$high.indi <- df$d - (df$high.strike * df$r * df$t + high.p - high.c) / (df$t * df$Close)
+p <- (df1$high.strike - df1$Close) / (df1$high.strike - df1$low.strike)
+df1$indi <- p * df1$low.indi + (1-p) * df1$high.indi
+df1$indi.chg <- df1$indi - delay(df1$indi)
+df1$indi[df1$vix < 25] <- NA
+df1$indi.chg[df1$vix < 25] <- NA
+df1$ret <- log(df1$Close) - delay(log(df1$Close))
+cum.plot(delay(df1$indi), df1$ret, main="weighted average option indicator vs. 1d return",
+xlab="weighted average option indicator", ylab="1d return")
+cum.plot(delay(df1$indi.chg), df1$ret, main="weighted average option indicator change vs. 1d return",
+xlab="weighted average option indicator change", ylab="1d return")
+portfolio <- matrix(NA, nrow=nrow(df1), ncol=1)
+rownames(portfolio) <- as.character(df1$Date)
+colnames(portfolio) <- "spx"
+ret <- portfolio
+portfolio[df1$indi > 0.01, 1] <- 1
+portfolio[df1$indi < -0.01, 1] <- -1
+ret[, 1] <- df1$ret
+show.pnl.gg(portfolio * 1000, ret, "trade SPX per indicator change", yearly.pnl = TRUE, hit.ratio=TRUE)
+portfolio <- matrix(NA, nrow=nrow(df1), ncol=1)
+rownames(portfolio) <- as.character(df1$Date)
+colnames(portfolio) <- "spx"
+ret <- portfolio
+portfolio[df1$indi.chg > 0.01, 1] <- 1
+portfolio[df1$indi.chg < -0.01, 1] <- -1
+ret[, 1] <- df1$ret
+show.pnl.gg(portfolio * 1000, ret, "trade SPX per indicator change", yearly.pnl = TRUE, hit.ratio=TRUE)
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+#+ fig.width = 15, fig.height = 15, echo = FALSE
+options(digits=4)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+require(xts, quietly = TRUE)
+require(knitr, quietly = TRUE)
+unit <- 100
+path <- "C:/Users/Daniel.yang/Documents/R folder/backtest/OptionIndicator/phase.2/Test/"
+file <- paste0(path, "raw.data.with.vix.csv")
+classes <- c("character", rep("numeric", 4), rep(c("character", rep("numeric", 3)), 8), "numeric")
+df <- read.table(file, header = TRUE, sep = ",", as.is = TRUE, na.strings = c("#N/AN/A", "#VALUE!"),
+colClasses = classes, fill = TRUE)
+df$r <- na.locf(df$r, na.rm = FALSE)
+# verify the 2nd nearest option, using weight average
+df1 <- df[, (1:2)]
+df1$vix <- mv.avg(df$VIX, 60)
+df$low.strike <- df1$low.strike <- as.numeric(substr(df$op2.low.p, 18, 21))
+df$high.strike <- df1$high.strike <- as.numeric(substr(df$op2.high.p, 18, 21))
+df1$Date <- as.Date(df1$Date)
+df1$Exp <- as.Date(substr(df$op2.low.p, 8, 15), format="%m/%d/%y")
+df$t <- df1$t <- as.numeric(df1$Exp - df1$Date) / 360
+tmp <- (df$Last.4 - df$Bid.4) * (df$Last.4 - df$Ask.4)
+mid <- (df$Ask.4 + df$Bid.4)/2
+low.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.4, mid), ifelse(tmp>0, mid, df$Last.4))
+tmp <- (df$Last.5 - df$Bid.5) * (df$Last.5 - df$Ask.5)
+mid <- (df$Ask.5 + df$Bid.5)/2
+low.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.5, mid), ifelse(tmp>0, mid, df$Last.5))
+tmp <- (df$Last.6 - df$Bid.6) * (df$Last.6 - df$Ask.6)
+mid <- (df$Ask.6 + df$Bid.6)/2
+high.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.6, mid), ifelse(tmp>0, mid, df$Last.6))
+tmp <- (df$Last.7 - df$Bid.7) * (df$Last.7 - df$Ask.7)
+mid <- (df$Ask.7 + df$Bid.7)/2
+high.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.7, mid), ifelse(tmp>0, mid, df$Last.7))
+df1$low.indi <- df$d - (df$low.strike * df$r * df$t + low.p - low.c) / (df$t * df$Close)
+df1$high.indi <- df$d - (df$high.strike * df$r * df$t + high.p - high.c) / (df$t * df$Close)
+p <- (df1$high.strike - df1$Close) / (df1$high.strike - df1$low.strike)
+df1$indi <- p * df1$low.indi + (1-p) * df1$high.indi
+View(df1)
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+#+ fig.width = 15, fig.height = 15, echo = FALSE
+options(digits=4)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+require(xts, quietly = TRUE)
+require(knitr, quietly = TRUE)
+unit <- 100
+path <- "C:/Users/Daniel.yang/Documents/R folder/backtest/OptionIndicator/phase.2/Test/"
+file <- paste0(path, "raw.data.with.vix.csv")
+classes <- c("character", rep("numeric", 4), rep(c("character", rep("numeric", 3)), 8), "numeric")
+df <- read.table(file, header = TRUE, sep = ",", as.is = TRUE, na.strings = c("#N/AN/A", "#VALUE!"),
+colClasses = classes, fill = TRUE)
+df$r <- na.locf(df$r, na.rm = FALSE)
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+tmp <- mv.sd(df1$vix,60)
+plot(tmp)
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+plot(df1$vixret.vol)
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+plot(df1$vixret.vol)
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+#+ fig.width = 15, fig.height = 15, echo = FALSE
+options(digits=4)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+require(xts, quietly = TRUE)
+require(knitr, quietly = TRUE)
+unit <- 100
+path <- "C:/Users/Daniel.yang/Documents/R folder/backtest/OptionIndicator/phase.2/Test/"
+file <- paste0(path, "raw.data.with.vix.csv")
+classes <- c("character", rep("numeric", 4), rep(c("character", rep("numeric", 3)), 8), "numeric")
+df <- read.table(file, header = TRUE, sep = ",", as.is = TRUE, na.strings = c("#N/AN/A", "#VALUE!"),
+colClasses = classes, fill = TRUE)
+df$r <- na.locf(df$r, na.rm = FALSE)
+# verify the 2nd nearest option, using weight average
+df1 <- df[, (1:2)]
+df1$vix <- mv.avg(df$VIX, 20)
+df$low.strike <- df1$low.strike <- as.numeric(substr(df$op2.low.p, 18, 21))
+df$high.strike <- df1$high.strike <- as.numeric(substr(df$op2.high.p, 18, 21))
+df1$Date <- as.Date(df1$Date)
+df1$Exp <- as.Date(substr(df$op2.low.p, 8, 15), format="%m/%d/%y")
+df$t <- df1$t <- as.numeric(df1$Exp - df1$Date) / 360
+tmp <- (df$Last.4 - df$Bid.4) * (df$Last.4 - df$Ask.4)
+mid <- (df$Ask.4 + df$Bid.4)/2
+low.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.4, mid), ifelse(tmp>0, mid, df$Last.4))
+tmp <- (df$Last.5 - df$Bid.5) * (df$Last.5 - df$Ask.5)
+mid <- (df$Ask.5 + df$Bid.5)/2
+low.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.5, mid), ifelse(tmp>0, mid, df$Last.5))
+tmp <- (df$Last.6 - df$Bid.6) * (df$Last.6 - df$Ask.6)
+mid <- (df$Ask.6 + df$Bid.6)/2
+high.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.6, mid), ifelse(tmp>0, mid, df$Last.6))
+tmp <- (df$Last.7 - df$Bid.7) * (df$Last.7 - df$Ask.7)
+mid <- (df$Ask.7 + df$Bid.7)/2
+high.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.7, mid), ifelse(tmp>0, mid, df$Last.7))
+df1$low.indi <- df$d - (df$low.strike * df$r * df$t + low.p - low.c) / (df$t * df$Close)
+df1$high.indi <- df$d - (df$high.strike * df$r * df$t + high.p - high.c) / (df$t * df$Close)
+p <- (df1$high.strike - df1$Close) / (df1$high.strike - df1$low.strike)
+df1$indi <- p * df1$low.indi + (1-p) * df1$high.indi
+df1$indi.chg <- df1$indi - delay(df1$indi)
+df1$vix.vol <- mv.sd(df1$vix, 20)
+plot(df1$vix.vol)
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+#+ fig.width = 15, fig.height = 15, echo = FALSE
+options(digits=4)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+require(xts, quietly = TRUE)
+require(knitr, quietly = TRUE)
+unit <- 100
+path <- "C:/Users/Daniel.yang/Documents/R folder/backtest/OptionIndicator/phase.2/Test/"
+file <- paste0(path, "raw.data.with.vix.csv")
+classes <- c("character", rep("numeric", 4), rep(c("character", rep("numeric", 3)), 8), "numeric")
+df <- read.table(file, header = TRUE, sep = ",", as.is = TRUE, na.strings = c("#N/AN/A", "#VALUE!"),
+colClasses = classes, fill = TRUE)
+df$r <- na.locf(df$r, na.rm = FALSE)
+# verify the 2nd nearest option, using weight average
+df1 <- df[, (1:2)]
+df1$vix <- mv.avg(df$VIX, 20)
+df$low.strike <- df1$low.strike <- as.numeric(substr(df$op2.low.p, 18, 21))
+df$high.strike <- df1$high.strike <- as.numeric(substr(df$op2.high.p, 18, 21))
+df1$Date <- as.Date(df1$Date)
+df1$Exp <- as.Date(substr(df$op2.low.p, 8, 15), format="%m/%d/%y")
+df$t <- df1$t <- as.numeric(df1$Exp - df1$Date) / 360
+tmp <- (df$Last.4 - df$Bid.4) * (df$Last.4 - df$Ask.4)
+mid <- (df$Ask.4 + df$Bid.4)/2
+low.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.4, mid), ifelse(tmp>0, mid, df$Last.4))
+tmp <- (df$Last.5 - df$Bid.5) * (df$Last.5 - df$Ask.5)
+mid <- (df$Ask.5 + df$Bid.5)/2
+low.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.5, mid), ifelse(tmp>0, mid, df$Last.5))
+tmp <- (df$Last.6 - df$Bid.6) * (df$Last.6 - df$Ask.6)
+mid <- (df$Ask.6 + df$Bid.6)/2
+high.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.6, mid), ifelse(tmp>0, mid, df$Last.6))
+tmp <- (df$Last.7 - df$Bid.7) * (df$Last.7 - df$Ask.7)
+mid <- (df$Ask.7 + df$Bid.7)/2
+high.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.7, mid), ifelse(tmp>0, mid, df$Last.7))
+df1$low.indi <- df$d - (df$low.strike * df$r * df$t + low.p - low.c) / (df$t * df$Close)
+df1$high.indi <- df$d - (df$high.strike * df$r * df$t + high.p - high.c) / (df$t * df$Close)
+p <- (df1$high.strike - df1$Close) / (df1$high.strike - df1$low.strike)
+df1$indi <- p * df1$low.indi + (1-p) * df1$high.indi
+df1$indi.chg <- df1$indi - delay(df1$indi)
+df1$vix.vol <- mv.sd(df1$vix, 80)
+plot(df1$vix.vol)
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+source('~/R folder/backtest/OptionIndicator/phase.2/Test/spx.option2.wt.indicator.with.vix.level.R')
+#+ fig.width = 15, fig.height = 15, echo = FALSE
+options(digits=4)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+require(xts, quietly = TRUE)
+require(knitr, quietly = TRUE)
+unit <- 100
+path <- "C:/Users/Daniel.yang/Documents/R folder/backtest/OptionIndicator/phase.2/Test/"
+file <- paste0(path, "raw.data.with.vix.csv")
+classes <- c("character", rep("numeric", 4), rep(c("character", rep("numeric", 3)), 8), "numeric")
+df <- read.csv(file, header = TRUE, sep = ",", as.is = TRUE, na.strings = c("#N/AN/A", "#VALUE!"),
+colClasses = classes, fill = TRUE)
+df$r <- na.locf(df$r, na.rm = FALSE)
+df$d <- na.locf(df$d, na.rm = FALSE)
+# verify the 2nd nearest option, using weight average
+df1 <- df[, (1:2)]
+df1$vix <- mv.avg(df$VIX, 20)
+df$low.strike <- df1$low.strike <- as.numeric(substr(df$op2.low.p, 18, 21))
+df$high.strike <- df1$high.strike <- as.numeric(substr(df$op2.high.p, 18, 21))
+df1$Date <- as.Date(df1$Date)
+df1$Exp <- as.Date(substr(df$op2.low.p, 8, 15), format="%m/%d/%y")
+df1$latest.exp <- as.Date(substr(df$op1.low.p, 8, 15), format="%m/%d/%y")
+df1$is.exp <- FALSE
+df1$is.exp[df1$Date <= df1$latest.exp & advance(df1$Date, 1, NA) > df1$latest.exp] <- TRUE
+df$t <- df1$t <- as.numeric(df1$Exp - df1$Date) / 360
+tmp <- (df$Last.4 - df$Bid.4) * (df$Last.4 - df$Ask.4)
+mid <- (df$Ask.4 + df$Bid.4)/2
+low.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.4, mid), ifelse(tmp>0, mid, df$Last.4))
+tmp <- (df$Last.5 - df$Bid.5) * (df$Last.5 - df$Ask.5)
+mid <- (df$Ask.5 + df$Bid.5)/2
+low.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.5, mid), ifelse(tmp>0, mid, df$Last.5))
+tmp <- (df$Last.6 - df$Bid.6) * (df$Last.6 - df$Ask.6)
+mid <- (df$Ask.6 + df$Bid.6)/2
+high.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.6, mid), ifelse(tmp>0, mid, df$Last.6))
+tmp <- (df$Last.7 - df$Bid.7) * (df$Last.7 - df$Ask.7)
+mid <- (df$Ask.7 + df$Bid.7)/2
+high.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.7, mid), ifelse(tmp>0, mid, df$Last.7))
+df1$low.indi <- df$d - (df$low.strike * df$r * df$t + low.p - low.c) / (df$t * df$Close)
+df1$high.indi <- df$d - (df$high.strike * df$r * df$t + high.p - high.c) / (df$t * df$Close)
+p <- (df1$high.strike - df1$Close) / (df1$high.strike - df1$low.strike)
+df1$indi <- p * df1$low.indi + (1-p) * df1$high.indi
+df1$indi.chg <- df1$indi - delay(df1$indi)
+df1$vix.vol <- mv.sd(df1$vix, 80)
+# df1$indi[df1$vix.vol < 2.5 | df1$vix < 16] <- NA
+# df1$indi.chg[df1$vix.vol < 2.5] <- NA
+#+ fig.width = 15, fig.height = 15, echo = FALSE
+options(digits=4)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+require(xts, quietly = TRUE)
+require(knitr, quietly = TRUE)
+unit <- 100
+path <- "C:/Users/Daniel.yang/Documents/R folder/backtest/OptionIndicator/phase.2/Test/"
+file <- paste0(path, "raw.data.with.vix.csv")
+classes <- c("character", rep("numeric", 4), rep(c("character", rep("numeric", 3)), 8), "numeric")
+df <- read.csv(file, header = TRUE, sep = ",", as.is = TRUE, na.strings = c("#N/AN/A", "#VALUE!"),
+colClasses = classes, fill = TRUE)
+df$r <- na.locf(df$r, na.rm = FALSE)
+df$d <- na.locf(df$d, na.rm = FALSE)
+# verify the 2nd nearest option, using weight average
+df1 <- df[, (1:2)]
+df1$vix <- mv.avg(df$VIX, 20)
+df$low.strike <- df1$low.strike <- as.numeric(substr(df$op2.low.p, 18, 21))
+df$high.strike <- df1$high.strike <- as.numeric(substr(df$op2.high.p, 18, 21))
+df1$Date <- as.Date(df1$Date)
+df1$Exp <- as.Date(substr(df$op2.low.p, 8, 15), format="%m/%d/%y")
+df1$latest.exp <- as.Date(substr(df$op1.low.p, 8, 15), format="%m/%d/%y")
+df1$is.exp <- FALSE
+df1$is.exp[df1$Date <= df1$latest.exp & advance(df1$Date, 1, NA) > df1$latest.exp] <- TRUE
+df$t <- df1$t <- as.numeric(df1$Exp - df1$Date) / 360
+tmp <- (df$Last.4 - df$Bid.4) * (df$Last.4 - df$Ask.4)
+mid <- (df$Ask.4 + df$Bid.4)/2
+low.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.4, mid), ifelse(tmp>0, mid, df$Last.4))
+tmp <- (df$Last.5 - df$Bid.5) * (df$Last.5 - df$Ask.5)
+mid <- (df$Ask.5 + df$Bid.5)/2
+low.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.5, mid), ifelse(tmp>0, mid, df$Last.5))
+tmp <- (df$Last.6 - df$Bid.6) * (df$Last.6 - df$Ask.6)
+mid <- (df$Ask.6 + df$Bid.6)/2
+high.p <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.6, mid), ifelse(tmp>0, mid, df$Last.6))
+tmp <- (df$Last.7 - df$Bid.7) * (df$Last.7 - df$Ask.7)
+mid <- (df$Ask.7 + df$Bid.7)/2
+high.c <- ifelse(is.na(tmp), ifelse(is.na(mid), df$Last.7, mid), ifelse(tmp>0, mid, df$Last.7))
+df1$low.indi <- df$d - (df$low.strike * df$r * df$t + low.p - low.c) / (df$t * df$Close)
+df1$high.indi <- df$d - (df$high.strike * df$r * df$t + high.p - high.c) / (df$t * df$Close)
+p <- (df1$high.strike - df1$Close) / (df1$high.strike - df1$low.strike)
+df1$indi <- p * df1$low.indi + (1-p) * df1$high.indi
+df1$indi.chg <- df1$indi - delay(df1$indi)
+df1$vix.vol <- mv.sd(df1$vix, 80)
+# df1$indi[df1$vix.vol < 2.5 | df1$vix < 16] <- NA
+# df1$indi.chg[df1$vix.vol < 2.5] <- NA
+nr <- which(abs(df1$indi) > 0.03)
+i <- 25
+p <- nr[i]
+start <- max(p - 20, 1)
+end <- min(p + 10, nrow(df1))
+d.sig <- p - start + 1
+d.exp <- which(df1$is.exp[start:end])
+price <- df1$Close[start:end]
+indicator <- df1$indi[start:end]
+dates <- df1$Date[start:end]
+the.dates <- as.character(dates[d.sig])
+d.sig
+d.exp
+indicator[d.sig]
+?plot
+View(df1)
+setwd("~/My.Backtest/2.Reversal.Based.On.Z.score/Equity.Index")
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+source('~/My.Backtest/2.Reversal.Based.On.Z.score/Equity.Index/simple.5d.reversal.R')
+View(price)
+source('~/My.Backtest/2.Reversal.Based.On.Z.score/Equity.Index/simple.5d.reversal.R')
+View(z.score)
+tmp <- apply(ret, 2, mean, na.rm=TRUE)
+View(tmp)
+tmp
+#+ fig.width = 15, fig.height = 10, echo = FALSE
+setwd("~/My.Backtest/2.Reversal.Based.On.Z.score/Equity.Index")
+options(digits=4)
+require(ggplot2)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+file <- "./Equity.Index.csv"
+ticker.file <- "./tickers.csv"
+price <- load.factset.datadownloading(file, ticker.file)
+ret <- log(price) - log(delay(price))
+# show cum.plot pattern
+ret.5d <- apply(ret, MARGIN = 2, FUN=mv.sum, lag=5)
+ret.vol <- apply(ret, MARGIN = 2, FUN=mv.sd, lag=20)
+z.score <- ret.5d / ret.vol / sqrt(5)
+View(z.score)
+tmp <- z.score[, c("VIX", "VX00")]
+View(tmp)
+View(price)
+#+ fig.width = 15, fig.height = 10, echo = FALSE
+setwd("~/My.Backtest/3.Option.Expiry")
+options(digits=4)
+require(ggplot2)
+source("C:/Users/Daniel.yang/Documents/R folder/backtest/functions.R")
+file <- "./Equity.Index.csv"
+ticker.file <- "./tickers.csv"
+price <- load.factset.datadownloading(file, ticker.file)
+ret <- log(price) - log(delay(price))
+View(price)
+View(ret)
